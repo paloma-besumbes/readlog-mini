@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ReadLog Mini</title>
+    <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<header class="site-header">
+    <div class="container">
+        <h1>ReadLog Mini</h1>
+        <nav aria-label="principal">
+            <a href="#libros">Libros</a>
+            <a href="#sobre">Sobre</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <section aria-labelledby="titulo-libros" id="libros">
+        <div class="section-head">
+            <h2 id="titulo-libros">Tu biblioteca</h2>
+            <div class="filters" role="group" aria-label="Filtros">
+                <label>
+                    <span class="sr-only">Buscar</span>
+                    <input id="buscador" type="search" placeholder="Buscar por título o autor…" />
+                </label>
+                <select id="estado">
+                    <option value="all">Todos</option>
+                    <option value="reading">Leyendo</option>
+                    <option value="finished">Terminado</option>
+                    <option value="toread">Por leer</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid" id="grid-libros">
+            <!-- Tarjetas estáticas por ahora; luego las haremos dinámicas -->
+            <article class="card">
+                <img src="https://covers.openlibrary.org/b/id/10521279-M.jpg" alt="Portada de 1984" />
+                <div class="card-body">
+                    <h3>1984</h3>
+                    <p class="author">George Orwell</p>
+                    <p class="status" data-status="finished">Terminado</p>
+                </div>
+            </article>
+
+            <article class="card">
+                <img src="https://covers.openlibrary.org/b/id/12629965-M.jpg" alt="Portada de The Pragmatic Programmer" />
+                <div class="card-body">
+                    <h3>The Pragmatic Programmer</h3>
+                    <p class="author">Andrew Hunt, David Thomas</p>
+                    <p class="status" data-status="reading">Leyendo</p>
+                </div>
+            </article>
+
+            <article class="card">
+                <img src="https://covers.openlibrary.org/b/id/8373226-M.jpg" alt="Portada de El nombre de la rosa" />
+                <div class="card-body">
+                    <h3>El nombre de la rosa</h3>
+                    <p class="author">Umberto Eco</p>
+                    <p class="status" data-status="toread">Por leer</p>
+                </div>
+            </article>
+
+            <!-- añade 2–3 más si quieres practicar -->
+        </div>
+    </section>
+
+    <section id="sobre" aria-labelledby="titulo-sobre">
+        <h2 id="titulo-sobre">Sobre el proyecto</h2>
+        <p>Este es el primer paso de tu portfolio. Hoy sólo maquetamos. En la próxima clase añadimos
+            interactividad con JavaScript (búsqueda y filtros).</p>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <small>Hecho por [tu nombre] · Accesible y responsive</small>
+    </div>
+</footer>
+
+<script defer src="./app.js"></script>
+</body>
+</html>

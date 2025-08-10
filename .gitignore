@@ -1,0 +1,9 @@
+# SO y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node (por si añadimos tooling luego)
+node_modules/
+dist/
