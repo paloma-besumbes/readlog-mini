@@ -60,6 +60,10 @@ const addAuthor = document.getElementById("addAuthor");
 const addStatus = document.getElementById("addStatus");
 const addCover = document.getElementById("addCover");
 
+// --- Referencias a los botones de la barra ---
+const btnClear = document.getElementById("btn-clear");
+const btnSeed = document.getElementById("btn-seed");
+
 // --- Filtros ---
 let filters = { q: "", status: "all" };
 
@@ -156,6 +160,23 @@ grid.addEventListener("click", (e) => {
     if (!btn) return;
     const id = Number(btn.dataset.id);
     books = books.filter((b) => b.id !== id);
+    saveBooks(books);
+    render();
+});
+
+
+// Vaciar biblioteca
+btnClear.addEventListener("click", () => {
+    if (!confirm("¿Seguro que quieres vaciar toda la biblioteca?")) return;
+    books = [];
+    saveBooks(books);
+    render();
+});
+
+// Restaurar ejemplos
+btnSeed.addEventListener("click", () => {
+    if (!confirm("Esto reemplazará tu biblioteca por los ejemplos. ¿Continuar?")) return;
+    books = seedBooks();
     saveBooks(books);
     render();
 });

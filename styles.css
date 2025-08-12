@@ -238,3 +238,31 @@ input::placeholder {
   color: var(--text);
   border-color: var(--accent);
 }
+
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 16px;
+}
+
+.toolbar button {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #0f1520;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.toolbar button:hover,
+.toolbar button:focus-visible {
+  border-color: var(--accent);
+}
+
+.toolbar .version {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: .85rem;
+}
