@@ -43,7 +43,11 @@
                 <form id="form-add" autocomplete="off">
                     <label>
                         <span>Título</span>
-                        <input id="addTitle" type="text" required placeholder="Ej: 1984" />
+                        <input id="addTitle" type="text" required placeholder="Ej: 1984" aria-autocomplete="list"
+                            aria-expanded="false" aria-controls="suggestions" />
+                        <div id="suggestions" class="suggestions" role="listbox" hidden></div>
+
+
                     </label>
                     <label>
                         <span>Autor</span>
