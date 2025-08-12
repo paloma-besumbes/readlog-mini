@@ -37,6 +37,35 @@
                 </div>
             </div>
 
+            <!-- Formulario para añadir libros -->
+            <div class="form-add">
+                <h3 style="margin:0 0 8px;">Añadir libro</h3>
+                <form id="form-add" autocomplete="off">
+                    <label>
+                        <span>Título</span>
+                        <input id="addTitle" type="text" required placeholder="Ej: 1984" />
+                    </label>
+                    <label>
+                        <span>Autor</span>
+                        <input id="addAuthor" type="text" required placeholder="Ej: George Orwell" />
+                    </label>
+                    <label>
+                        <span>Estado</span>
+                        <select id="addStatus" required>
+                            <option value="toread">Por leer</option>
+                            <option value="reading">Leyendo</option>
+                            <option value="finished">Terminado</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Portada (URL opcional)</span>
+                        <input id="addCover" type="url" placeholder="https://..." />
+                    </label>
+                    <button type="submit">Añadir</button>
+                </form>
+            </div>
+
+            <!-- La rejilla queda vacía: JS se encarga de pintarla -->
             <div class="grid" id="grid-libros">
 
             </div>
