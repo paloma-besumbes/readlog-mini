@@ -30,11 +30,12 @@ body {
   margin-inline: auto;
 }
 
+/* Header */
 .site-header {
   position: sticky;
   top: 0;
   backdrop-filter: blur(8px);
-  background: rgba(11, 15, 20, 0.6);
+  background: rgba(11, 15, 20, .6);
   border-bottom: 1px solid var(--border);
 }
 
@@ -56,12 +57,13 @@ body {
   margin-left: 16px;
 }
 
-.site-header nav a:focus-visible,
-.site-header nav a:hover {
+.site-header nav a:hover,
+.site-header nav a:focus-visible {
   color: var(--text);
   outline: none;
 }
 
+/* Filtros */
 .section-head {
   display: flex;
   align-items: center;
@@ -88,25 +90,26 @@ input::placeholder {
   color: var(--muted);
 }
 
+/* Grid */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
 }
 
+/* Card */
 .card {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .25);
   transition: transform .15s ease;
 }
 
 .card:hover {
   transform: translateY(-2px);
 }
-
 
 .card-body {
   padding: 12px;
@@ -123,6 +126,7 @@ input::placeholder {
   font-size: .95rem;
 }
 
+/* Estado (clicable) */
 .status {
   display: inline-block;
   padding: 4px 8px;
@@ -130,6 +134,8 @@ input::placeholder {
   font-size: .8rem;
   border: 1px solid var(--border);
   background: #0f1520;
+  cursor: pointer;
+  user-select: none;
 }
 
 .status[data-status="reading"] {
@@ -144,6 +150,12 @@ input::placeholder {
   border-color: #eab308;
 }
 
+.status:hover,
+.status:focus-visible {
+  border-color: var(--accent);
+}
+
+/* Footer */
 .site-footer {
   border-top: 1px solid var(--border);
   margin-top: 32px;
@@ -151,7 +163,7 @@ input::placeholder {
   color: var(--muted);
 }
 
-/* Accesibilidad: sólo mostrar outline al navegar con teclado */
+/* Accesibilidad */
 :focus {
   outline: none;
 }
@@ -161,7 +173,6 @@ input::placeholder {
   outline-offset: 2px;
 }
 
-/* Utilidad para lectores de pantalla */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -174,7 +185,7 @@ input::placeholder {
   border: 0;
 }
 
-
+/* Formulario */
 .form-add {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -195,6 +206,7 @@ input::placeholder {
   gap: 6px;
   font-size: .9rem;
   color: var(--muted);
+  position: relative;
 }
 
 .form-add button {
@@ -206,12 +218,12 @@ input::placeholder {
   cursor: pointer;
 }
 
-.form-add button:focus-visible,
-.form-add button:hover {
-  outline: none;
+.form-add button:hover,
+.form-add button:focus-visible {
   border-color: var(--accent);
 }
 
+/* Acciones */
 .card .actions {
   display: flex;
   justify-content: flex-end;
@@ -233,7 +245,7 @@ input::placeholder {
   border-color: var(--accent);
 }
 
-
+/* Toolbar (opcional) */
 .toolbar {
   display: flex;
   align-items: center;
@@ -261,43 +273,41 @@ input::placeholder {
   font-size: .85rem;
 }
 
-/* Portadas: verticales, completas (sin recorte) */
-.card .cover {
-  width: 100%;
-  aspect-ratio: 2 / 3;
-  /* típico libro vertical */
-  background: #0f1520;
-  /* fondo oscuro detrás */
+/* ============================= */
+/*  Portadas estilo Goodreads    */
+/* ============================= */
+
+/* Marco claro y contenedor con ratio fijo (2:3) */
+.gr-cover {
+  background: #fff;
+  padding: 6px;
+  /* pequeño marco blanco homogéneo */
+  border-bottom: 1px solid var(--border);
+  line-height: 0;
+  /* elimina gap de img inline */
   display: flex;
   align-items: center;
   justify-content: center;
+  aspect-ratio: 2 / 3;
+  /* todas las tarjetas misma altura */
   overflow: hidden;
+  /* por seguridad */
 }
 
-.card .cover img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  /* mostrar portada entera */
+/* La imagen: ocupa el ancho o el alto, pero NO se recorta */
+.gr-cover__img {
   display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  /* mantiene proporción */
+  height: auto;
+  /* mantiene proporción */
+  object-fit: contain;
+  /* por si acaso */
 }
 
-/* Haz clicable la “píldora” de estado */
-.status {
-  cursor: pointer;
-  user-select: none;
-}
-
-.status:hover,
-.status:focus-visible {
-  border-color: var(--accent);
-}
-
-/* Autocompletado (dropdown de sugerencias) */
-.form-add label {
-  position: relative;
-}
-
+/* Autocompletado */
 .suggestions {
   position: absolute;
   z-index: 20;

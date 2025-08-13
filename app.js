@@ -1,4 +1,4 @@
-// ReadLog Mini v3: localStorage + CRUD + Autocompletado + Cambio de estado
+// ReadLog Mini v3 — Estilo Goodreads: <img> 2:3 sin recortes + CRUD + filtros + autocompletado
 
 // --- Storage ---
 const STORAGE_KEY = "readlog.books.v1";
@@ -8,7 +8,7 @@ const loadBooks = () => {
 };
 const saveBooks = (list) => localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
 
-// --- Datos iniciales ---
+// --- Semilla de datos ---
 function seedBooks() {
     return [
         { id: 1, title: "1984", author: "George Orwell", status: "finished", cover: "https://covers.openlibrary.org/b/id/10521279-M.jpg" },
@@ -28,18 +28,19 @@ const normalize = (s) => s.toLowerCase().normalize("NFD").replace(/\p{Diacritic}
 const grid = document.getElementById("grid-libros");
 const searchInput = document.getElementById("buscador");
 const statusSelect = document.getElementById("estado");
-
-// Form
+// Formulario añadir
 const formAdd = document.getElementById("form-add");
 const addTitle = document.getElementById("addTitle");
 const addAuthor = document.getElementById("addAuthor");
 const addStatus = document.getElementById("addStatus");
 const addCover = document.getElementById("addCover");
-
-// Autocompletado
+// Sugerencias
 const suggestionsEl = document.getElementById("suggestions");
+// Toolbar (si existe en tu HTML)
+const btnClear = document.getElementById("btn-clear");
+const btnSeed = document.getElementById("btn-seed");
 
-// --- Utilidades ---
+// --- Utils ---
 function statusLabel(s) {
     if (s === "reading") return "Leyendo";
     if (s === "finished") return "Terminado";
@@ -56,11 +57,11 @@ function escapeHtml(str = "") {
     return String(str).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 }
 
-// --- Render ---
+// --- Render (portadas estilo Goodreads) ---
 function render() {
     const visible = books.filter((b) => matches(b, filters));
 
-    if (visible.length === 0) {
+    if (!visible.length) {
         grid.innerHTML = `
       <div class="card" role="status" aria-live="polite" style="grid-column:1/-1; text-align:center; padding:24px;">
         <p>No hay libros que coincidan con tu búsqueda.</p>
@@ -72,10 +73,16 @@ function render() {
         const coverUrl = b.cover?.trim() || "https://placehold.co/400x600?text=Sin+portada";
         return `
       <article class="card">
-        <figure class="cover">
-          <img src="${escapeHtml(coverUrl)}" alt="Portada de ${escapeHtml(b.title)}"
-               onerror="this.src='https://placehold.co/400x600?text=Sin+portada'; this.onerror=null;">
+        <figure class="gr-cover">
+          <img
+            class="gr-cover__img"
+            src="${escapeHtml(coverUrl)}"
+            alt="Portada de ${escapeHtml(b.title)}"
+            width="400" height="600"                /* fija 2:3 para evitar saltos */
+            loading="lazy" decoding="async"
+            onerror="this.src='https://placehold.co/400x600?text=Sin+portada'; this.onerror=null;">
         </figure>
+
         <div class="card-body">
           <h3>${escapeHtml(b.title)}</h3>
           <p class="author">${escapeHtml(b.author)}</p>
@@ -83,6 +90,7 @@ function render() {
             ${statusLabel(b.status)}
           </p>
         </div>
+
         <div class="actions">
           <button class="btn-delete" data-id="${b.id}" aria-label="Eliminar ${escapeHtml(b.title)}">Eliminar</button>
         </div>
@@ -90,30 +98,35 @@ function render() {
     }).join("");
 }
 
-// --- Filtros ---
-searchInput.addEventListener("input", (e) => { filters.q = e.target.value; render(); });
-statusSelect.addEventListener("change", (e) => { filters.status = e.target.value; render(); });
+// --- Eventos: filtros ---
+if (searchInput) {
+    searchInput.addEventListener("input", (e) => { filters.q = e.target.value; render(); });
+}
+if (statusSelect) {
+    statusSelect.addEventListener("change", (e) => { filters.status = e.target.value; render(); });
+}
 
-// --- Añadir libro ---
-formAdd.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const title = addTitle.value.trim();
-    const author = addAuthor.value.trim();
-    const status = addStatus.value;
-    const cover = addCover.value.trim() || "https://placehold.co/400x600?text=Sin+portada";
-    if (!title || !author) return;
+// --- Evento: añadir libro ---
+if (formAdd) {
+    formAdd.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const title = addTitle.value.trim();
+        const author = addAuthor.value.trim();
+        const status = addStatus.value;
+        const cover = addCover.value.trim() || "https://placehold.co/400x600?text=Sin+portada";
+        if (!title || !author) return;
 
-    const newBook = { id: nextId(), title, author, status, cover };
-    books.push(newBook);
-    saveBooks(books);
-    formAdd.reset();
-    suggestionsEl.hidden = true; suggestionsEl.innerHTML = "";
-    render();
-});
+        const newBook = { id: nextId(), title, author, status, cover };
+        books.push(newBook);
+        saveBooks(books);
+        formAdd.reset();
+        if (suggestionsEl) { suggestionsEl.hidden = true; suggestionsEl.innerHTML = ""; }
+        render();
+    });
+}
 
-// --- Eliminar y cambiar estado (delegación) ---
+// --- Delegación: eliminar y cambiar estado ---
 const cycle = { toread: "reading", reading: "finished", finished: "toread" };
-
 grid.addEventListener("click", (e) => {
     const delBtn = e.target.closest(".btn-delete");
     if (delBtn) {
@@ -132,11 +145,9 @@ grid.addEventListener("click", (e) => {
     }
 });
 
-// --- Autocompletado con Open Library ---
+// --- Autocompletado (Open Library) ---
 let abortCtrl = null;
-function debounce(fn, ms) {
-    let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
-}
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 async function fetchSuggestions(q) {
     if (abortCtrl) abortCtrl.abort();
     abortCtrl = new AbortController();
@@ -151,7 +162,9 @@ async function fetchSuggestions(q) {
         cover: d.cover_i ? `https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg` : "",
     }));
 }
+
 const updateSuggestions = debounce(async (q) => {
+    if (!suggestionsEl) return;
     if (q.length < 3) { suggestionsEl.hidden = true; suggestionsEl.innerHTML = ""; return; }
     try {
         const items = await fetchSuggestions(q);
@@ -159,7 +172,7 @@ const updateSuggestions = debounce(async (q) => {
             suggestionsEl.innerHTML = `<div class="empty">Sin resultados</div>`;
             suggestionsEl.hidden = false; return;
         }
-        suggestionsEl.innerHTML = items.map((it, i) => `
+        suggestionsEl.innerHTML = items.map((it) => `
       <button type="button" class="item" role="option"
               data-title="${escapeHtml(it.title)}"
               data-author="${escapeHtml(it.author)}"
@@ -169,36 +182,53 @@ const updateSuggestions = debounce(async (q) => {
       </button>`).join("");
         suggestionsEl.hidden = false;
     } catch (e) {
-        if (e.name !== "AbortError") {
+        if (e.name !== "AbortError" && suggestionsEl) {
             suggestionsEl.hidden = true; suggestionsEl.innerHTML = "";
         }
     }
 }, 300);
 
-addTitle.addEventListener("input", (e) => {
-    updateSuggestions(e.target.value);
-    addTitle.setAttribute("aria-expanded", "true");
-});
-addTitle.addEventListener("blur", () => {
-    // esperar un poco para permitir clic en la sugerencia
-    setTimeout(() => {
-        suggestionsEl.hidden = true; addTitle.setAttribute("aria-expanded", "false");
-    }, 150);
-});
-addTitle.addEventListener("focus", () => {
-    if (suggestionsEl.innerHTML.trim()) suggestionsEl.hidden = false;
-});
+if (addTitle) {
+    addTitle.addEventListener("input", (e) => {
+        updateSuggestions(e.target.value);
+        addTitle.setAttribute("aria-expanded", "true");
+    });
+    addTitle.addEventListener("blur", () => {
+        setTimeout(() => { if (suggestionsEl) { suggestionsEl.hidden = true; addTitle.setAttribute("aria-expanded", "false"); } }, 150);
+    });
+    addTitle.addEventListener("focus", () => {
+        if (suggestionsEl && suggestionsEl.innerHTML.trim()) suggestionsEl.hidden = false;
+    });
+}
 
-suggestionsEl.addEventListener("click", (e) => {
-    const btn = e.target.closest(".item");
-    if (!btn) return;
-    addTitle.value = btn.dataset.title || "";
-    addAuthor.value = btn.dataset.author || "";
-    if (btn.dataset.cover) addCover.value = btn.dataset.cover;
-    suggestionsEl.hidden = true; suggestionsEl.innerHTML = "";
-    addTitle.setAttribute("aria-expanded", "false");
-});
+if (suggestionsEl) {
+    suggestionsEl.addEventListener("click", (e) => {
+        const btn = e.target.closest(".item");
+        if (!btn) return;
+        addTitle.value = btn.dataset.title || "";
+        addAuthor.value = btn.dataset.author || "";
+        if (btn.dataset.cover) addCover.value = btn.dataset.cover;
+        suggestionsEl.hidden = true; suggestionsEl.innerHTML = "";
+        addTitle.setAttribute("aria-expanded", "false");
+    });
+}
+
+// --- Toolbar: vaciar/restaurar (si existen) ---
+if (btnClear) {
+    btnClear.addEventListener("click", () => {
+        if (!confirm("¿Seguro que quieres vaciar toda la biblioteca?")) return;
+        books = [];
+        saveBooks(books); render();
+    });
+}
+if (btnSeed) {
+    btnSeed.addEventListener("click", () => {
+        if (!confirm("Esto reemplazará tu biblioteca por los ejemplos. ¿Continuar?")) return;
+        books = seedBooks();
+        saveBooks(books); render();
+    });
+}
 
 // --- Primera pintura ---
 render();
-console.log("ReadLog Mini v3 ✅ (autocompletado + cambio de estado + portadas completas)");
+console.log("ReadLog Mini v3 ✅ (estilo Goodreads: <img> 2:3, sin recortes)");
