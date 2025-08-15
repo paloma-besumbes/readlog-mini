@@ -1,4 +1,4 @@
-// ReadLog Mini v3 — Estilo Goodreads: <img> 2:3 sin recortes + CRUD + filtros + autocompletado
+// ReadLog Mini v4 — A11y + teclado en autocompletado + estado accesible
 
 // --- Storage ---
 const STORAGE_KEY = "readlog.books.v1";
@@ -8,7 +8,7 @@ const loadBooks = () => {
 };
 const saveBooks = (list) => localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
 
-// --- Semilla de datos ---
+// --- Semilla ---
 function seedBooks() {
     return [
         { id: 1, title: "High fidelity ", author: "Nick Hornby", status: "finished", cover: "https://wemadethis.co.uk/wp-content/uploads/2011/08/high_fidelity.jpg" },
@@ -28,36 +28,52 @@ const normalize = (s) => s.toLowerCase().normalize("NFD").replace(/\p{Diacritic}
 const grid = document.getElementById("grid-libros");
 const searchInput = document.getElementById("buscador");
 const statusSelect = document.getElementById("estado");
-// Formulario añadir
+// Form
 const formAdd = document.getElementById("form-add");
 const addTitle = document.getElementById("addTitle");
 const addAuthor = document.getElementById("addAuthor");
 const addStatus = document.getElementById("addStatus");
 const addCover = document.getElementById("addCover");
-// Sugerencias
+// Autocompletado
 const suggestionsEl = document.getElementById("suggestions");
-// Toolbar (si existe en tu HTML)
+// Toolbar
 const btnClear = document.getElementById("btn-clear");
 const btnSeed = document.getElementById("btn-seed");
 
+// Live region
+const live = document.getElementById("live");
+
+
+
 // --- Utils ---
-function statusLabel(s) {
-    if (s === "reading") return "Leyendo";
-    if (s === "finished") return "Terminado";
-    return "Por leer";
+
+// --- A11y: live region announcer ---
+let liveTimer;
+function announce(msg) {
+    if (!live) return;
+
+    // vaciamos primero para forzar re-anuncio aunque el texto sea igual
+    live.textContent = "";
+    clearTimeout(liveTimer);
+
+    // pequeño retardo: algunos lectores no anuncian cambios instantáneos
+    liveTimer = setTimeout(() => {
+        live.textContent = msg;
+    }, 20);
 }
+
+function statusLabel(s) { return s === "reading" ? "Leyendo" : s === "finished" ? "Terminado" : "Por leer"; }
+function nextState(s) { return s === "toread" ? "reading" : s === "reading" ? "finished" : "toread"; }
 function matches(book, { q, status }) {
     const qn = normalize(q);
     const inText = normalize(book.title).includes(qn) || normalize(book.author).includes(qn);
     const statusOk = status === "all" ? true : book.status === status;
     return inText && statusOk;
 }
-function nextId() { return books.length ? Math.max(...books.map((b) => b.id)) + 1 : 1; }
-function escapeHtml(str = "") {
-    return String(str).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
-}
+function nextId() { return books.length ? Math.max(...books.map(b => b.id)) + 1 : 1; }
+function escapeHtml(str = "") { return String(str).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
 
-// --- Render (portadas estilo Goodreads) ---
+// --- Render ---
 function render() {
     const visible = books.filter((b) => matches(b, filters));
 
@@ -71,6 +87,7 @@ function render() {
 
     grid.innerHTML = visible.map((b) => {
         const coverUrl = b.cover?.trim() || "https://placehold.co/400x600?text=Sin+portada";
+        const next = nextState(b.status);
         return `
       <article class="card">
         <figure class="gr-cover">
@@ -78,7 +95,7 @@ function render() {
             class="gr-cover__img"
             src="${escapeHtml(coverUrl)}"
             alt="Portada de ${escapeHtml(b.title)}"
-            width="400" height="600"                /* fija 2:3 para evitar saltos */
+            width="400" height="600"
             loading="lazy" decoding="async"
             onerror="this.src='https://placehold.co/400x600?text=Sin+portada'; this.onerror=null;">
         </figure>
@@ -86,9 +103,15 @@ function render() {
         <div class="card-body">
           <h3>${escapeHtml(b.title)}</h3>
           <p class="author">${escapeHtml(b.author)}</p>
-          <p class="status" data-id="${b.id}" data-status="${b.status}" title="Haz clic para cambiar el estado">
+
+          <button
+            type="button"
+            class="status"
+            data-id="${b.id}"
+            data-status="${b.status}"
+            aria-label="Estado: ${statusLabel(b.status)}. Pulsa para cambiar a ${statusLabel(next)}.">
             ${statusLabel(b.status)}
-          </p>
+          </button>
         </div>
 
         <div class="actions">
@@ -98,15 +121,11 @@ function render() {
     }).join("");
 }
 
-// --- Eventos: filtros ---
-if (searchInput) {
-    searchInput.addEventListener("input", (e) => { filters.q = e.target.value; render(); });
-}
-if (statusSelect) {
-    statusSelect.addEventListener("change", (e) => { filters.status = e.target.value; render(); });
-}
+// --- Filtros ---
+if (searchInput) searchInput.addEventListener("input", (e) => { filters.q = e.target.value; render(); });
+if (statusSelect) statusSelect.addEventListener("change", (e) => { filters.status = e.target.value; render(); });
 
-// --- Evento: añadir libro ---
+// --- Añadir ---
 if (formAdd) {
     formAdd.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -117,35 +136,37 @@ if (formAdd) {
         if (!title || !author) return;
 
         const newBook = { id: nextId(), title, author, status, cover };
-        books.push(newBook);
-        saveBooks(books);
+        books.push(newBook); saveBooks(books);
         formAdd.reset();
-        if (suggestionsEl) { suggestionsEl.hidden = true; suggestionsEl.innerHTML = ""; }
+        if (suggestionsEl) { suggestionsEl.hidden = true; suggestionsEl.innerHTML = ""; addTitle.setAttribute("aria-expanded", "false"); }
         render();
+        announce(`Libro añadido: ${title}.`);
     });
 }
 
 // --- Delegación: eliminar y cambiar estado ---
-const cycle = { toread: "reading", reading: "finished", finished: "toread" };
 grid.addEventListener("click", (e) => {
     const delBtn = e.target.closest(".btn-delete");
     if (delBtn) {
         const id = Number(delBtn.dataset.id);
+        const book = books.find(b => b.id === id);
         books = books.filter((b) => b.id !== id);
-        saveBooks(books); render(); return;
+        saveBooks(books); render();
+        if (book) announce(`Eliminado: ${book.title}.`);
+        return;
     }
-    const statusEl = e.target.closest(".status");
-    if (statusEl) {
-        const id = Number(statusEl.dataset.id);
+    const statusBtn = e.target.closest(".status");
+    if (statusBtn) {
+        const id = Number(statusBtn.dataset.id);
         const book = books.find((b) => b.id === id);
-        if (book) {
-            book.status = cycle[book.status] || "toread";
-            saveBooks(books); render();
-        }
+        if (!book) return;
+        book.status = nextState(book.status);
+        saveBooks(books); render();
+        announce(`Estado actualizado: ${book.title}, ${statusLabel(book.status)}.`);
     }
 });
 
-// --- Autocompletado (Open Library) ---
+// --- Autocompletado (Open Library) + Teclado ---
 let abortCtrl = null;
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 async function fetchSuggestions(q) {
@@ -163,72 +184,139 @@ async function fetchSuggestions(q) {
     }));
 }
 
+let activeIndex = -1; // índice de la sugerencia activa para teclado
+
+function renderSuggestions(items) {
+    if (!suggestionsEl) return;
+    if (!items.length) {
+        suggestionsEl.innerHTML = `<div class="empty">Sin resultados</div>`;
+        suggestionsEl.hidden = false;
+        addTitle.setAttribute("aria-expanded", "true");
+        addTitle.setAttribute("aria-activedescendant", "");
+        activeIndex = -1;
+        announce("Sin resultados.");
+        return;
+    }
+    suggestionsEl.innerHTML = items.map((it, i) => `
+    <button type="button" class="item" role="option"
+            id="sugg-${i}"
+            aria-selected="${i === activeIndex}"
+            data-index="${i}"
+            data-title="${escapeHtml(it.title)}"
+            data-author="${escapeHtml(it.author)}"
+            data-cover="${escapeHtml(it.cover)}">
+      <strong>${escapeHtml(it.title)}</strong>
+      ${it.author ? `<span class="muted"> — ${escapeHtml(it.author)}</span>` : ""}
+    </button>`).join("");
+    suggestionsEl.hidden = false;
+    addTitle.setAttribute("aria-expanded", "true");
+    addTitle.setAttribute("aria-activedescendant", activeIndex >= 0 ? `sugg-${activeIndex}` : "");
+}
+
 const updateSuggestions = debounce(async (q) => {
     if (!suggestionsEl) return;
-    if (q.length < 3) { suggestionsEl.hidden = true; suggestionsEl.innerHTML = ""; return; }
+    if (q.length < 3) {
+        suggestionsEl.hidden = true; suggestionsEl.innerHTML = "";
+        addTitle.setAttribute("aria-expanded", "false");
+        addTitle.setAttribute("aria-activedescendant", "");
+        activeIndex = -1;
+        return;
+    }
     try {
         const items = await fetchSuggestions(q);
-        if (!items.length) {
-            suggestionsEl.innerHTML = `<div class="empty">Sin resultados</div>`;
-            suggestionsEl.hidden = false; return;
-        }
-        suggestionsEl.innerHTML = items.map((it) => `
-      <button type="button" class="item" role="option"
-              data-title="${escapeHtml(it.title)}"
-              data-author="${escapeHtml(it.author)}"
-              data-cover="${escapeHtml(it.cover)}">
-        <strong>${escapeHtml(it.title)}</strong>
-        ${it.author ? `<span class="muted"> — ${escapeHtml(it.author)}</span>` : ""}
-      </button>`).join("");
-        suggestionsEl.hidden = false;
+        activeIndex = -1;
+        renderSuggestions(items);
+        if (items.length) announce(`${items.length} sugerencias disponibles. Usa flechas y Enter.`);
     } catch (e) {
         if (e.name !== "AbortError" && suggestionsEl) {
             suggestionsEl.hidden = true; suggestionsEl.innerHTML = "";
+            addTitle.setAttribute("aria-expanded", "false");
+            addTitle.setAttribute("aria-activedescendant", "");
+            activeIndex = -1;
         }
     }
 }, 300);
 
+// Input: escribe y navega con teclado
 if (addTitle) {
-    addTitle.addEventListener("input", (e) => {
-        updateSuggestions(e.target.value);
-        addTitle.setAttribute("aria-expanded", "true");
+    addTitle.addEventListener("input", (e) => updateSuggestions(e.target.value));
+
+    addTitle.addEventListener("keydown", (e) => {
+        if (suggestionsEl?.hidden) return;
+        const items = Array.from(suggestionsEl.querySelectorAll(".item"));
+        if (!items.length) return;
+
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
+            activeIndex = e.key === "ArrowDown"
+                ? Math.min(items.length - 1, activeIndex + 1)
+                : Math.max(0, activeIndex - 1);
+            items.forEach((el, i) => el.setAttribute("aria-selected", String(i === activeIndex)));
+            addTitle.setAttribute("aria-activedescendant", `sugg-${activeIndex}`);
+        }
+
+        if (e.key === "Enter" && activeIndex >= 0) {
+            e.preventDefault();
+            const el = items[activeIndex];
+            pickSuggestion(el);
+        }
+
+        if (e.key === "Escape") {
+            suggestionsEl.hidden = true; suggestionsEl.innerHTML = "";
+            addTitle.setAttribute("aria-expanded", "false");
+            addTitle.setAttribute("aria-activedescendant", "");
+            activeIndex = -1;
+        }
     });
+
     addTitle.addEventListener("blur", () => {
-        setTimeout(() => { if (suggestionsEl) { suggestionsEl.hidden = true; addTitle.setAttribute("aria-expanded", "false"); } }, 150);
-    });
-    addTitle.addEventListener("focus", () => {
-        if (suggestionsEl && suggestionsEl.innerHTML.trim()) suggestionsEl.hidden = false;
+        setTimeout(() => {
+            if (!suggestionsEl) return;
+            suggestionsEl.hidden = true; suggestionsEl.innerHTML = "";
+            addTitle.setAttribute("aria-expanded", "false");
+            addTitle.setAttribute("aria-activedescendant", "");
+            activeIndex = -1;
+        }, 150);
     });
 }
 
+// Click en sugerencias
 if (suggestionsEl) {
     suggestionsEl.addEventListener("click", (e) => {
         const btn = e.target.closest(".item");
         if (!btn) return;
-        addTitle.value = btn.dataset.title || "";
-        addAuthor.value = btn.dataset.author || "";
-        if (btn.dataset.cover) addCover.value = btn.dataset.cover;
-        suggestionsEl.hidden = true; suggestionsEl.innerHTML = "";
-        addTitle.setAttribute("aria-expanded", "false");
+        pickSuggestion(btn);
     });
 }
 
-// --- Toolbar: vaciar/restaurar (si existen) ---
+function pickSuggestion(btn) {
+    addTitle.value = btn.dataset.title || "";
+    addAuthor.value = btn.dataset.author || "";
+    if (btn.dataset.cover) addCover.value = btn.dataset.cover;
+    if (suggestionsEl) {
+        suggestionsEl.hidden = true; suggestionsEl.innerHTML = "";
+    }
+    addTitle.setAttribute("aria-expanded", "false");
+    addTitle.setAttribute("aria-activedescendant", "");
+    activeIndex = -1;
+    addAuthor.focus();
+    announce(`Seleccionado: ${btn.dataset.title}.`);
+}
+
+// --- Toolbar ---
 if (btnClear) {
     btnClear.addEventListener("click", () => {
         if (!confirm("¿Seguro que quieres vaciar toda la biblioteca?")) return;
-        books = [];
-        saveBooks(books); render();
+        books = []; saveBooks(books); render(); announce("Biblioteca vaciada.");
     });
 }
 if (btnSeed) {
     btnSeed.addEventListener("click", () => {
         if (!confirm("Esto reemplazará tu biblioteca por los ejemplos. ¿Continuar?")) return;
-        books = seedBooks();
-        saveBooks(books); render();
+        books = seedBooks(); saveBooks(books); render(); announce("Ejemplos restaurados.");
     });
 }
 
 // --- Primera pintura ---
 render();
-console.log("ReadLog Mini v3 ✅ (estilo Goodreads: <img> 2:3, sin recortes)");
+console.log("ReadLog Mini v4 ✅ (A11y + teclado en autocompletado)");

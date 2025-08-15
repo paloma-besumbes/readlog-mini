@@ -9,6 +9,9 @@
 </head>
 
 <body>
+    <a href="#libros" class="skip-link">Saltar al contenido</a>
+    <div id="live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
     <header class="site-header">
         <div class="container">
             <h1>ReadLog Mini</h1>
@@ -43,8 +46,9 @@
                 <form id="form-add" autocomplete="off">
                     <label>
                         <span>Título</span>
-                        <input id="addTitle" type="text" required placeholder="Ej: 1984" aria-autocomplete="list"
-                            aria-expanded="false" aria-controls="suggestions" />
+                        <input id="addTitle" type="text" required placeholder="Ej: 1984" role="combobox"
+                            aria-autocomplete="list" aria-expanded="false" aria-controls="suggestions"
+                            aria-activedescendant="" />
                         <div id="suggestions" class="suggestions" role="listbox" hidden></div>
 
 

@@ -146,6 +146,7 @@ input::placeholder {
   font-size: .8rem;
   border: 1px solid var(--border);
   background: #0f1520;
+  color: var(--text);
   cursor: pointer;
   user-select: none;
 }
@@ -358,4 +359,49 @@ input::placeholder {
 .suggestions .empty {
   color: var(--muted);
   padding: 10px;
+}
+
+
+/* Skip link accesible */
+
+.skip-link {
+  position: fixed;
+  /* encima del header sticky */
+  left: 12px;
+  top: 12px;
+  z-index: 10000;
+  padding: 8px 12px;
+  background: #0f1520;
+  color: var(--text);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+
+  /* oculto por defecto moviéndolo fuera de la pantalla */
+  transform: translateY(-200%);
+  transition: transform .15s ease;
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: translateY(0);
+  /* lo trae a la vista */
+  outline: none;
+  /* evita el doble borde del :focus-visible global */
+}
+
+/* respetar preferencias de movimiento */
+@media (prefers-reduced-motion: reduce) {
+  .skip-link {
+    transition: none;
+  }
+}
+
+
+
+/* Sugerencia activa (teclado ↑/↓) */
+.suggestions .item[aria-selected="true"] {
+  background: #0b111b;
+  outline: 1px solid var(--accent);
 }
