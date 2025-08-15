@@ -11,9 +11,9 @@ const saveBooks = (list) => localStorage.setItem(STORAGE_KEY, JSON.stringify(lis
 // --- Semilla de datos ---
 function seedBooks() {
     return [
-        { id: 1, title: "1984", author: "George Orwell", status: "finished", cover: "https://covers.openlibrary.org/b/id/10521279-M.jpg" },
-        { id: 2, title: "The Pragmatic Programmer", author: "Andrew Hunt, David Thomas", status: "reading", cover: "https://covers.openlibrary.org/b/id/12629965-M.jpg" },
-        { id: 3, title: "El nombre de la rosa", author: "Umberto Eco", status: "toread", cover: "https://covers.openlibrary.org/b/id/8373226-M.jpg" },
+        { id: 1, title: "High fidelity ", author: "Nick Hornby", status: "finished", cover: "https://wemadethis.co.uk/wp-content/uploads/2011/08/high_fidelity.jpg" },
+        { id: 2, title: "One hundred years of solitude", author: "Gabriel García Márquez", status: "reading", cover: "https://m.media-amazon.com/images/I/51rg0tvuFvL._SY445_SX342_ControlCacheEqualizer_.jpg" },
+        { id: 3, title: "The secret history", author: "Donna Tartt", status: "toread", cover: "https://m.media-amazon.com/images/I/416lUyEwujL._SY445_SX342_ControlCacheEqualizer_.jpg" },
     ];
 }
 
