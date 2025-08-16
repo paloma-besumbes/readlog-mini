@@ -27,6 +27,16 @@
             <div class="section-head">
                 <h2 id="titulo-libros">Tu biblioteca</h2>
                 <div class="filters" role="group" aria-label="Filtros">
+                    <label for="orden" class="sr-only">Ordenar</label>
+                    <select id="orden" aria-label="Ordenar">
+                        <option value="title-asc">Título A→Z</option>
+                        <option value="title-desc">Título Z→A</option>
+                        <option value="author-asc">Autor A→Z</option>
+                        <option value="author-desc">Autor Z→A</option>
+                        <option value="status-asc">Estado (Por leer→Leyendo→Terminado)</option>
+                        <option value="status-desc">Estado (Terminado→Leyendo→Por leer)</option>
+                    </select>
+
                     <label>
                         <span class="sr-only">Buscar</span>
                         <input id="buscador" type="search" placeholder="Buscar por título o autor…" />

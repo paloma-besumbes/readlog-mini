@@ -405,3 +405,53 @@ input::placeholder {
   background: #0b111b;
   outline: 1px solid var(--accent);
 }
+
+
+/* Edición inline dentro de la tarjeta */
+.edit-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.edit-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: .9rem;
+  color: var(--muted);
+}
+
+.edit-form input,
+.edit-form select {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #0f1520;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.btn:hover,
+.btn:focus-visible {
+  border-color: var(--accent);
+}
+
+.btn.secondary {
+  background: transparent;
+}
