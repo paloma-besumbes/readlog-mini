@@ -164,12 +164,20 @@ grid.addEventListener("click", (e) => {
     const id = Number(e.target.dataset.id);
 
     if (e.target.closest(".btn-delete")) {
+        const id = Number(e.target.dataset.id);
         const book = books.find(b => b.id === id);
+        if (!book) return;
+
+        const ok = confirm(`¿Eliminar "${book.title}"? Esta acción no se puede deshacer.`);
+        if (!ok) return;
+
         books = books.filter(b => b.id !== id);
-        save(STORAGE_KEY, books); render();
-        if (book) announce(`Eliminado: ${book.title}.`);
+        save(STORAGE_KEY, books);
+        render();
+        announce(`Eliminado: ${book.title}.`);
         return;
     }
+
 
     if (e.target.closest(".status")) {
         const book = books.find(b => b.id === id);
